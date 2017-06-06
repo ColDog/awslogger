@@ -1,16 +1,16 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"log"
-	"net"
+	"os"
+	"strings"
 	"time"
 
-	"flag"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"os"
-	"strings"
 )
 
 var (
@@ -59,10 +59,6 @@ func (l *logger) setup() error {
 	stream := streams.LogStreams[0]
 	l.seqToken = stream.UploadSequenceToken
 	return nil
-}
-
-func (l *logger) publish(msg string) {
-	l.messages <- msg
 }
 
 func (l *logger) run() {
@@ -118,38 +114,25 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get aws session: %v", err)
 	}
+
 	lg := &logger{
 		client:   cloudwatchlogs.New(sess),
 		messages: make(chan string, messageBufferSize),
 	}
 
-	udpAddr, err := net.ResolveUDPAddr("udp", "0.0.0.0:514")
-	if err != nil {
-		log.Fatalf("failed to resolve udp: %v", err)
-	}
-
-	conn, err := net.ListenUDP("udp", udpAddr)
-	if err != nil {
-		log.Fatalf("failed to listen udp: %v", err)
-	}
-
 	err = lg.setup()
 	if err != nil {
-		log.Fatalf("failed to setup: %v", err)
+		log.Fatalf("failed to setup logger: %v", err)
 	}
+
 	go lg.run()
 
-	buf := make([]byte, readBufferSize)
+	reader := bufio.NewReader(os.Stdin)
 	for {
-		_, _, err := conn.ReadFromUDP(buf)
+		text, err := reader.ReadString('\n')
 		if err != nil {
-			time.Sleep(10 * time.Millisecond)
 			continue
 		}
-
-		data := string(buf)
-		for _, line := range strings.Split(data, "\n") {
-			lg.publish(line)
-		}
+		lg.messages <- text
 	}
 }
