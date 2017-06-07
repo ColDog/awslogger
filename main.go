@@ -126,7 +126,8 @@ func (l *logger) flush(messages []string) {
 
 func main() {
 	sess, err := session.NewSession(&aws.Config{
-		Region: &region,
+		Region:                        &region,
+		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
 		log.Fatalf("failed to get aws session: %v", err)
