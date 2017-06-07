@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -20,18 +21,34 @@ var (
 	timeFormatString  = "2006-01-02T15:04:05-0700"
 	readBufferSize    = 1024
 	messageBufferSize = 20000
-	maxPutSize        = 10000
+	maxPutSize        = 5000
 )
+
+func usage() {
+	usage := `Usage: awslogger [options]
+
+    Pipe logs from various sources into Cloudwatch Logs. All logs are piped through STDIN.
+
+Example With journalctl:
+
+    journalctl -o short-iso -f | docker run -i --name=logger.service coldog/awslogger
+
+Options:
+`
+	fmt.Fprintf(os.Stderr, usage)
+	flag.PrintDefaults()
+}
 
 func init() {
 	hostname, _ := os.Hostname()
-	flag.StringVar(&groupName, "group", "", "AWS Cloudwatch group name, will be created if it doesn't exist")
-	flag.StringVar(&streamName, "stream", hostname, "AWS Cloudwatch stream name, will be created if it doesn't exist")
+	flag.Usage = usage
+	flag.StringVar(&groupName, "group", "", "AWS Cloudwatch group name, will be created if it doesn't exist.")
+	flag.StringVar(&streamName, "stream", hostname, "AWS Cloudwatch stream name, will be created if it doesn't exist. Defaults to the hostname.")
 	flag.StringVar(&region, "region", "", "AWS region")
-	flag.StringVar(&timeFormatString, "tf", timeFormatString, "GO time formatting string expects timestamp to be first element in log entries")
-	flag.IntVar(&readBufferSize, "read-buffer-size", readBufferSize, "UDP read buffer size")
-	flag.IntVar(&messageBufferSize, "message-buffer-size", messageBufferSize, "Message buffer size")
-	flag.IntVar(&maxPutSize, "max-put-size", maxPutSize, "Max put message size")
+	flag.StringVar(&timeFormatString, "time-fmt", timeFormatString, "GO time formatting string.")
+	flag.IntVar(&readBufferSize, "read-buffer-size", readBufferSize, "Read buffer size.")
+	flag.IntVar(&messageBufferSize, "message-buffer-size", messageBufferSize, "Message buffer size.")
+	flag.IntVar(&maxPutSize, "max-put-size", maxPutSize, "Max put message size.")
 	flag.Parse()
 }
 
