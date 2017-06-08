@@ -20,10 +20,8 @@ Options:
     	Message buffer size. (default 20000)
   -read-buffer-size int
     	Read buffer size. (default 1024)
-  -region string
-    	AWS region
   -stream string
-    	AWS Cloudwatch stream name, will be created if it doesn't exist. Defaults to the hostname. (default "a4df29c6e118")
+    	AWS Cloudwatch stream name, will be created if it doesn't exist. Defaults to the hostname. (default "271806a8fda8")
   -time-fmt string
     	GO time formatting string. (default "2006-01-02T15:04:05-0700")
 ```

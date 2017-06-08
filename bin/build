@@ -2,6 +2,9 @@
 
 set -e
 
+export version=$(cat version.go | grep 'version' | cut -d' ' -f4 | tr -d '"')
+
 CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main github.com/coldog/awslogger
 docker build -t coldog/awslogger .
+docker tag coldog/awslogger colodg/awslogger:${version}
 rm main

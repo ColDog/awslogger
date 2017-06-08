@@ -17,7 +17,6 @@ import (
 var (
 	groupName         string
 	streamName        string
-	region            string
 	timeFormatString  = "2006-01-02T15:04:05-0700"
 	readBufferSize    = 1024
 	messageBufferSize = 20000
@@ -44,7 +43,6 @@ func init() {
 	flag.Usage = usage
 	flag.StringVar(&groupName, "group", "", "AWS Cloudwatch group name, will be created if it doesn't exist.")
 	flag.StringVar(&streamName, "stream", hostname, "AWS Cloudwatch stream name, will be created if it doesn't exist. Defaults to the hostname.")
-	flag.StringVar(&region, "region", "", "AWS region")
 	flag.StringVar(&timeFormatString, "time-fmt", timeFormatString, "GO time formatting string.")
 	flag.IntVar(&readBufferSize, "read-buffer-size", readBufferSize, "Read buffer size.")
 	flag.IntVar(&messageBufferSize, "message-buffer-size", messageBufferSize, "Message buffer size.")
@@ -126,7 +124,6 @@ func (l *logger) flush(messages []string) {
 
 func main() {
 	sess, err := session.NewSession(&aws.Config{
-		Region:                        &region,
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	})
 	if err != nil {
